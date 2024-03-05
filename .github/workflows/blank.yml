@@ -24,4 +24,4 @@ jobs:
       - name: install build dependencies 
         run: sudo apt install git debootstrap grub-common grub-pc-bin grub-efi-ia32-bin grub-efi-amd64-bin mtools squashfs-tools xorriso xxd
       - name: build iso
-        run: sudo source shell && sudo source wdvn-env-amd-64 && sudo wdvn-make "$(wdvn-name)" base hardware hardware-proprietary graphical-xfce4 live finish
+        run: sudo -s source shell && sudo -s source wdvn-env-amd-64 && sudo -s wdvn-make "$(wdvn-name)" base hardware hardware-proprietary graphical-xfce4 live finish
