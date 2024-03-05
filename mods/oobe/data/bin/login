@@ -1,0 +1,70 @@
+#!/bin/bash
+export PATH="/sbin:/usr/sbin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games"
+export HOME="/root"
+CHOICE=1
+while true; do
+	echo "Welcome to windvn!"
+	echo "1: Finish installation"
+	echo "2: Open bash"
+	echo "3: Shut down"
+	read -p "Choice: " CHOICE
+	echo ""
+	
+	if [ "$CHOICE" == "1" ]; then
+		apt-get -y install locales tzdata
+		dpkg-reconfigure locales
+		dpkg-reconfigure tzdata
+		groupadd -f sudo
+		
+		while true; do
+			read -p "First user (Administrator): " NEW_USER
+			(
+				set -e
+				adduser --gecos "" "$NEW_USER"
+				adduser "$NEW_USER" "sudo"
+			)
+			if [ "$?" == "0" ]; then
+				break
+			else
+				deluser --remove-home "$NEW_USER"
+				echo ""
+			fi
+		done
+		
+		set -e
+		for file in "/oobe/setupComplete"/*; do
+			if [[ -x "$file" ]]; then
+				source "$file"
+			fi
+		done
+		
+		echo "$HOSTNAME" > /etc/hostname
+		
+		echo "127.0.0.1       localhost
+127.0.1.1       $HOSTNAME
+
+# The following lines are desirable for IPv6 capable hosts
+::1     localhost ip6-localhost ip6-loopback
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+" > /etc/hosts
+		
+		rm "/bin/login"
+		mv "/bin/login.bak" "/bin/login"
+		
+		echo "Setup complete. Press ENTER to use windvn."
+		read -p ""
+		exit
+	fi
+	
+	if [ "$CHOICE" == "2" ]; then
+		bash
+	fi
+	
+	if [ "$CHOICE" == "3" ]; then
+		poweroff
+		exit
+	fi
+	
+	echo ""
+done

@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "${WDVN_NAME}-${WDVN_ARCH}_${WDVN_VER}_${WDVN_DATE}"

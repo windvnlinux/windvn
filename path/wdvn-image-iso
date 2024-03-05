@@ -1,0 +1,84 @@
+#!/bin/bash
+set -e
+DISC_NAME="${WDVN_VER:0:3} $WDVN_ARCH $WDVN_DATE"
+DISC_NAME="${DISC_NAME:0:32}"
+DISC_NAME="$(echo "$DISC_NAME" | tr "[:lower:]" "[:upper:]")"
+DISC_NAME="$(echo "$DISC_NAME" | tr "-" "_")"
+DISC_NAME="$(echo "$DISC_NAME" | tr "." "_")"
+DISC_NAME="$(echo "$DISC_NAME" | tr " " "_")"
+CHROOT="$1"
+IMAGE="$2.tmp"
+
+if [ -d "$IMAGE" ]; then
+	rm -r -f "$IMAGE"
+fi
+
+EXIT=0
+if [ ! -d "$CHROOT/lib/live/boot" ]; then
+	echo "ERROR: /lib/live/boot not found within chroot. On your chroot, run 'apt install live-boot'."
+	EXIT=1
+fi
+
+if [ ! -f "$CHROOT/usr/share/initramfs-tools/hooks/live" ]; then
+	echo "ERROR: /usr/share/initramfs-tools/hooks/live not found within chroot. On your chroot, run 'apt install live-boot-initramfs-tools'."
+	EXIT=1
+fi
+
+if ! command -v mksquashfs &> /dev/null
+then
+	echo "ERROR: mksquashfs not found. Run 'apt install squashfs-tools'."
+	EXIT=1
+fi
+
+if ! command -v xorriso &> /dev/null
+then
+	echo "ERROR: xorriso not found. Run 'apt install xorriso'."
+	EXIT=1
+fi
+
+if ! command -v grub-mkrescue &> /dev/null
+then
+        echo "ERROR: grub-mkrescue not found. Run 'apt install grub-common'."
+        EXIT=1
+fi
+
+if [ -f "$2" ]; then
+	echo "ERROR: $2 already exists."
+	EXIT=1
+fi
+
+if [ "$EXIT" == "1" ]; then
+	exit 1
+fi
+
+mkdir -p "$IMAGE"
+mkdir -p "$IMAGE/live"
+mkdir -p "$IMAGE/boot/grub"
+
+cp -fv "$CHROOT/boot"/vmlinuz-* "$IMAGE/live/vmlinuz"
+cp -fv "$CHROOT/boot"/initrd.img-* "$IMAGE/live/initrd.img"
+mksquashfs "$CHROOT" "$IMAGE/live/filesystem.squashfs"
+#mksquashfs -comp zstd -Xcompression-level 22 "$CHROOT" "$IMAGE/live/filesystem.squashfs"
+
+echo "GRUB_TERMINAL=console
+
+menuentry '$WDVN_NAME $WDVN_ARCH $WDVN_VER $WDVN_DATE live' --class gnu-linux --id linux {
+	insmod all_video
+	echo "Loading Linux ..."
+	linux /live/vmlinuz boot=live noautologin quiet
+	echo "Loading initrd ..."
+	initrd /live/initrd.img
+}
+
+menuentry '$WDVN_NAME $WDVN_ARCH $WDVN_VER $WDVN_DATE live (RAM-boot)' --class gnu-linux --id linux {
+	insmod all_video
+	echo "Loading Linux ..."
+	linux /live/vmlinuz boot=live noautologin quiet toram
+	echo "Loading initrd ..."
+	initrd /live/initrd.img
+}
+" > "$IMAGE/boot/grub/grub.cfg"
+
+grub-mkrescue -o "$2" "$IMAGE" --volid "$DISC_NAME"
+
+rm -r "$IMAGE"

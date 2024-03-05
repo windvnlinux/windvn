@@ -1,0 +1,19 @@
+#!/bin/bash
+set -e
+apt-get --error-on=any -y update
+apt-get -y upgrade
+apt-get -y install $WDVN_PACKAGES_INTERACTIVE
+export DEBIAN_FRONTEND="noninteractive"
+apt-get -y install $WDVN_PACKAGES
+update-rc.d keyboard-setup.sh defaults
+
+if [ "$WDVN_ONLINE" != "1" ]; then
+	if [ "$WDVN_FAT" != "1" ]; then
+		apt-get -y install --download-only $WDVN_PACKAGES_DL
+	else
+		apt-get -y install $WDVN_PACKAGES_DL
+	fi
+fi
+
+unset DEBIAN_FRONTEND
+apt-get -y autoclean

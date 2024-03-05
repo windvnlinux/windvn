@@ -1,0 +1,5 @@
+#!/bin/bash
+umount -l "$1/proc"
+umount -l "$1/sys"
+umount -l "$1/dev/pts"
+umount -l "$1/dev"

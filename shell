@@ -1,0 +1,13 @@
+#!/bin/bash
+export WDVN_NAME="windvn"
+export WDVN_URL="http://deb.devuan.org/merged"
+export WDVN_VER_DEBSTRAP="chimaera" # This is the suite/version name passed to debootstrap. This is useful if you want to pull, for example, daedalus, but that name is not understood yet in debootstrap. So you can use "testing" instead, which is always understood, and then put "daedalus" (or whatever currently corresponds to testing) into WDVN_VER, so the resulting distro stays within the daedalus specification, instead of updating to the next testing version.
+export WDVN_VER="$WDVN_VER_DEBSTRAP"
+
+export WDVN_DATE="$(date --utc "+%Y.%m.%d-%H.%M.%S")"
+export WDVN_PID="$BASHPID"
+export PATH="$(dirname "$(realpath -s "$BASH_SOURCE")")/path:$PATH"
+source "wdvn-env-i386"
+export WDVN_FULLNAME=
+export DEBIAN_FRONTEND="noninteractive"
+export PS1="\[\033[0;35m\]\$(wdvn-name)\[\033[0m\]:\[\033[0;37m\]\$(basename -- \$PWD)\[\033[0m\]> "

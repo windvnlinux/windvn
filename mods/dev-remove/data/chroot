@@ -1,0 +1,4 @@
+#!/bin/bash
+set -e
+apt-get -y remove build-essential git pkg-config *-dev >/dev/null
+apt-get -y autoremove

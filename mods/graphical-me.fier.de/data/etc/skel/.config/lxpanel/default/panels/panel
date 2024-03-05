@@ -1,0 +1,139 @@
+# lxpanel <profile> config file. Manually editing is not recommended.
+# Use preference dialog in lxpanel to adjust config when you can.
+
+Global {
+  edge=bottom
+  allign=left
+  margin=0
+  widthtype=percent
+  width=100
+  height=22
+  transparent=1
+  tintcolor=#1c1c1c
+  alpha=200
+  setdocktype=0
+  setpartialstrut=1
+  usefontcolor=1
+  fontcolor=#ffffff
+  usefontsize=0
+  fontsize=10
+  background=0
+  backgroundfile=/usr/share/lxpanel/images/background.png
+  iconsize=16
+  align=left
+}
+Plugin {
+  type=space
+  Config {
+    Size=2
+  }
+  expand=0
+}
+Plugin {
+  type=menu
+  Config {
+    image=/usr/share/icons/gnome/16x16/places/gnome-main-menu.png
+    system {
+    }
+    separator {
+    }
+    item {
+      command=run
+    }
+    separator {
+    }
+    item {
+      image=gnome-logout
+      command=logout
+    }
+  }
+}
+Plugin {
+  type=space
+  Config {
+  }
+}
+Plugin {
+  type=separator
+  Config {
+  }
+}
+Plugin {
+  type=launchbar
+  Config {
+    Button {
+      id=pcmanfm.desktop
+    }
+    Button {
+      id=lxde-x-terminal-emulator.desktop
+    }
+  }
+}
+Plugin {
+  type=separator
+  Config {
+  }
+}
+Plugin {
+  type=taskbar
+  Config {
+    DisableUpscale=-1
+    UseSmallerIcons=0
+    UseMouseWheel=0
+    IconsOnly=0
+    GroupedTasks=0
+    FlatButton=0
+  }
+}
+Plugin {
+  type=separator
+  Config {
+  }
+}
+Plugin {
+  type=tray
+  Config {
+  }
+}
+Plugin {
+  type=volume
+  Config {
+  }
+}
+Plugin {
+  type=netstat
+  Config {
+  }
+}
+Plugin {
+  type=batt
+  Config {
+  }
+}
+Plugin {
+  type=separator
+  Config {
+  }
+}
+Plugin {
+  type=dclock
+  Config {
+    ClockFmt=%R
+    TooltipFmt=%A %x
+    BoldFont=0
+    IconOnly=0
+    CenterText=0
+  }
+}
+Plugin {
+  type=separator
+  Config {
+  }
+}
+Plugin {
+  type=wincmd
+  Config {
+    Button1=iconify
+    Button2=shade
+  }
+}

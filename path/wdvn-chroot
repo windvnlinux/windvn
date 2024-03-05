@@ -1,0 +1,25 @@
+#!/bin/bash
+set -e
+trap ctrl_c INT
+
+function ctrl_c() {
+	exit 1
+}
+
+function bind() {
+	set +e
+	mountpoint -q "$2"
+	if [ $? = 0 ]; then
+		set -e
+		return 0
+	fi
+	
+	set -e
+	mount --bind -o x-gvfs-hide "$1" "$2"
+}
+
+bind "/dev"     "$1/dev"
+bind "/dev/pts" "$1/dev/pts"
+bind "/sys"     "$1/sys"
+bind "/proc"    "$1/proc"
+chroot "$1" ${@:2}

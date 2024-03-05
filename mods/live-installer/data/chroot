@@ -1,0 +1,3 @@
+#!/bin/bash
+set -e
+apt-get install -y --download-only cryptsetup cryptsetup-initramfs

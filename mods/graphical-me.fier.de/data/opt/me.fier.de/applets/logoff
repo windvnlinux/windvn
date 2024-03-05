@@ -1,0 +1,7 @@
+#!/bin/bash
+while IFS="" read -r de_module || [ -n "$de_module" ]; do
+	if [ -x "$de_conf_local/modules.d/$de_module/logoff" ]; then
+		"$de_conf_local/modules.d/$de_module/logoff" "$de_conf_local" "$de_module"
+	fi
+done < "$de_conf_local/modules"
+exit 0

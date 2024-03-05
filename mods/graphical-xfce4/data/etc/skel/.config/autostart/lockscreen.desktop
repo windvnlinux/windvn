@@ -1,0 +1,13 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=0.9.4
+Type=Application
+Name=lockscreen
+Comment=
+Exec=bash -c 'xset s 900 5; XSECURELOCK_BLANK_DPMS_STATE="off" XSECURELOCK_SHOW_DATETIME=1 XSECURELOCK_DATETIME_FORMAT="%%A - %%d.%%m.%%Y, %%H:%%M:%%S" XSECURELOCK_DISCARD_FIRST_KEYPRESS=0 XSECURELOCK_BLANK_TIMEOUT=5 XSECURELOCK_AUTH_TIMEOUT=20 xss-lock -n /usr/lib/xsecurelock/dimmer -l -- xsecurelock'
+OnlyShowIn=XFCE;
+RunHook=0
+StartupNotify=false
+Terminal=false
+Hidden=false
+

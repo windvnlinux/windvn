@@ -1,0 +1,35 @@
+#!/bin/bash
+(
+	set -e
+	if [[ -d "$1.tmp" ]]; then
+		rm -r -f "$1.tmp"
+	fi
+
+	if ! [[ -d "$1" ]]; then
+		mkdir -p "$1.tmp"
+		wdvn-get "$1.tmp"
+		mv "$1.tmp" "$1"
+	fi
+
+	if [[ -f "$1/chroot" ]]; then
+		rm -f "$1/chroot"
+	fi
+
+	for WDVN_MODLIST in "${@:2}"
+	do
+		echo "-- $WDVN_MODLIST --"
+		while IFS="" read -r WDVN_LINE || [ -n "$WDVN_LINE" ]
+		do
+			echo "> $WDVN_LINE"
+			source wdvn-mod "mods/$WDVN_LINE" "$1"
+		done < "modlists/$WDVN_MODLIST"
+	done
+	
+	echo "-- CLEANUP --"
+	wdvn-clean "$1"
+)
+
+rtn=$?
+wdvn-chroot-end "$1"
+find "$1" -name ".wdvn-placeholder" -type f -delete
+exit $rtn

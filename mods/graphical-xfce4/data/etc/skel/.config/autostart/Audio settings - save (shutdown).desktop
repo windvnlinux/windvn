@@ -1,0 +1,13 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=0.9.4
+Type=Application
+Name=Audio settings - save (shutdown)
+Comment=
+Exec=sh -c "/usr/sbin/alsactl --file ~/.config/asound.state store"
+OnlyShowIn=XFCE;
+RunHook=2
+StartupNotify=false
+Terminal=false
+Hidden=false
+

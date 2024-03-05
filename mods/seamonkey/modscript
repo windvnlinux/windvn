@@ -1,0 +1,2 @@
+#!/bin/bash
+export WDVN_PACKAGES_DL="$WDVN_PACKAGES_DL seamonkey-mozilla-build"

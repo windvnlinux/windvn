@@ -1,0 +1,2 @@
+#!/bin/bash
+export WDVN_PACKAGES="$WDVN_PACKAGES firmware-linux-free firmware-ath9k-htc"

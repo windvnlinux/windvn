@@ -1,0 +1,3 @@
+#!/bin/bash
+set -e
+debootstrap --arch="$WDVN_ARCH" "$WDVN_VER_DEBSTRAP" "$1" "$WDVN_URL"

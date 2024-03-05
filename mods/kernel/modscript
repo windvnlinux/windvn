@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+export WDVN_PACKAGES="$WDVN_PACKAGES $WDVN_KERNEL"

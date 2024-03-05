@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+if [[ -f "/usr/local/bin/ksuperkey" ]]; then
+	exit
+fi
+apt-get -y install git pkg-config build-essential libx11-dev libxtst-dev
+git clone https://github.com/hanschen/ksuperkey
+cd ksuperkey
+make
+mv ksuperkey /usr/local/bin/ksuperkey
+cd ..
+rm -rf ksuperkey

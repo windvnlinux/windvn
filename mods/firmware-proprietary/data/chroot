@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e
+function sfp {
+	packages=""
+	while read p; do
+		IFS=" " read -ra packageinfo <<< "$p"
+		if [[ "${packageinfo[0]}" == *firmware* ]]; then
+			packages="$packages ${packageinfo[0]}"
+		fi
+	done <<<$(apt-cache search "$1")
+	echo "$packages"
+}
+echo "WDVN_PACKAGES=\"\$WDVN_PACKAGES firmware-linux firmware-misc-nonfree amd64-microcode intel-microcode $(sfp wireless) $(sfp wifi) $(sfp net) $(sfp nic)\"" >"/chroot-out"

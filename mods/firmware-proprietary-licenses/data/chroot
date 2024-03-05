@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+cat << EOF | debconf-set-selections
+firmware-ipw2x00 firmware-ipw2x00/license/accepted boolean true
+EOF
+
+cat << EOF | debconf-set-selections
+firmware-ivtv firmware-ivtv/license/accepted boolean true
+EOF

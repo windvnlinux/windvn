@@ -1,0 +1,3 @@
+#!/bin/bash
+export WDVN_ARCH="amd64"
+export WDVN_KERNEL="linux-image-amd64"

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=setnet.sh
+Comment=Configure Networking (LAN/WiFi)
+Exec=x-terminal-emulator -e "sudo setnet.sh"
+Icon=preferences-system-network
+Path=
+Terminal=false
+StartupNotify=false
+Categories=Settings;HardwareSettings;

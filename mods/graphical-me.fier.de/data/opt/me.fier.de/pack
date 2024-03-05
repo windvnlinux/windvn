@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+DIR="$(dirname "$(realpath "$BASH_SOURCE")")"
+DISTRO="me.fier.de"
+cd "$DIR"
+if [ -f "$DISTRO.tar.bz2" ]; then rm "$DISTRO.tar.bz2"; fi
+cd ".."
+if [ -f "$DISTRO.tar.bz2" ]; then rm "$DISTRO.tar.bz2"; fi
+tar -cjf "$DISTRO.tar.bz2" -C "$DIR" .
+mv "$DISTRO.tar.bz2" "$DIR"

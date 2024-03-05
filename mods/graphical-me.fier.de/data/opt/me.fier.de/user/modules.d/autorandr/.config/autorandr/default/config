@@ -1,0 +1,6 @@
+output Virtual-1
+crtc 0
+mode 1024x768
+pos 0x0
+primary
+rate 74.99

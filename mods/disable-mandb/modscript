@@ -1,0 +1,6 @@
+#!/bin/bash
+rm -rf "$1/usr/share/doc"
+rm -rf "$1/usr/share/man"
+rm -rf "$1/usr/share/groff"
+rm -rf "$1/usr/share/info"
+rm -rf "$1/usr/share/lintian"

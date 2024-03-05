@@ -1,0 +1,3 @@
+#!/bin/bash
+wdvn-chroot "$1" apt -y autoclean
+find "$1/var/log" -type f -delete

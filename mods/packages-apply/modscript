@@ -1,0 +1,17 @@
+#!/bin/bash
+echo "#!/bin/bash" >"$1/oobe/setupComplete/50-packages"
+if [ "$WDVN_ONLINE" == "1" ]; then
+echo 'echo "A network connection will have to be established, if it isnt already."
+echo "Press RETURN to continue."
+read
+nmtui
+' >> "$1/oobe/setupComplete/50-packages"
+fi
+
+echo "apt-get -y install $WDVN_PACKAGES_DL
+apt-get -y remove $WDVN_PACKAGES_REMOVE
+apt-get -y autoremove
+apt-get -y clean
+" >>"$1/oobe/setupComplete/50-packages"
+
+chmod +x "$1/oobe/setupComplete/50-packages"

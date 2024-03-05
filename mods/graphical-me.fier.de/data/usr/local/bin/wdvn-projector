@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+xrandr --auto
+lxrandr
+$HOME/.config/me.fier.de/modules.d/wallpaper/run "$HOME/.config/me.fier.de"

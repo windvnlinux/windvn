@@ -1,0 +1,2 @@
+#!/bin/bash
+export WDVN_PACKAGES_DL="$WDVN_PACKAGES_DL xinit xorg xfce4 xfce4-*-plugin xfce4-power-manager gvfs gvfs-backends gvfs-fuse unifont scrot xclip netsurf-gtk x11-xserver-utils xss-lock xsecurelock qt5-style-plugins alsa-utils connman-gtk xfce4-terminal mousepad synaptic catfish galculator celluloid gpicview xpdf unrar-free engrampa blueman xscreensaver- lightdm-"

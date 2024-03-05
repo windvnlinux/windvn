@@ -1,0 +1,20 @@
+#!/bin/bash
+set -e
+if [ -f "$1/modscript" ]; then
+	source "$1/modscript" "$2"
+fi
+
+if [ -d "$1/data" ]; then
+	cp --reflink=auto -rf "$1/data/." "$2"
+fi
+
+if [ -f "$2/chroot" ]; then
+	wdvn-chroot "$2" "/chroot"
+	rm "$2/chroot"
+fi
+
+if [ -f "$2/chroot-out" ]; then
+	source "$2/chroot-out"
+	rm "$2/chroot-out"
+fi
+	
