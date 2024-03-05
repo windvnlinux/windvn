@@ -22,6 +22,6 @@ jobs:
         run: sudo apt update
       # Runs a single command using the runners shell
       - name: install build dependencies 
-        run: sudo apt install git debootstrap grub-common grub-pc-bin grub-efi-ia32-bin grub-efi-amd64-bin mtools squashfs-tools xorrisoxxd
+        run: sudo apt install git debootstrap grub-common grub-pc-bin grub-efi-ia32-bin grub-efi-amd64-bin mtools squashfs-tools xorriso xxd
       - name: build iso
         run: sudo source shell && sudo source wdvn-env-amd-64 && sudo wdvn-make "$(wdvn-name)" base hardware hardware-proprietary graphical-xfce4 live finish
