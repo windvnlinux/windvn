@@ -1,0 +1,12 @@
+#!/usr/bin/env python3
+import apt
+cache = apt.Cache()
+ofile = open("/chroot-out","w",encoding="utf-8")
+ofile.write('WDVN_PACKAGES="$WDVN_PACKAGES')
+for package in cache:
+	if "nvidia" in package.name.lower(): continue
+	if package.name == "raspi-firmware": continue
+	if package.candidate.origins[0].component == "non-free-firmware":
+		ofile.write(" " + package.name)
+ofile.write('"')
+ofile.close()

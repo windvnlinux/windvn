@@ -1,0 +1,26 @@
+#!/bin/bash
+set -e
+
+if [ -d "output" ]; then
+	rm -rf "output"
+fi
+
+# i386 legacy (single language)
+source wdvn-env-i386
+WDVN_FAT=0 wdvn-make "output" shrink-nodocs shrink-singlelanguage base hardware graphical-me.fier.de live finish legacy
+wdvn-image-iso "output" "$(wdvn-name)_legacy_en.iso"
+rm -rf "output"
+
+# i386 proprietary
+WDVN_FAT=1 wdvn-make "output" base hardware hardware-proprietary graphical-xfce4 live finish
+wdvn-image-iso "output" "$(wdvn-name)_proprietary.iso"
+rm -rf "output"
+
+# amd64 proprietary
+source wdvn-env-amd64
+WDVN_FAT=1 wdvn-make "output" base hardware hardware-proprietary graphical-xfce4 live finish
+wdvn-image-iso "output" "$(wdvn-name)_proprietary.iso"
+rm -rf "output"
+
+echo ""
+echo "Success!"

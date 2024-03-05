@@ -1,0 +1,3 @@
+#!/bin/bash
+export HOME="$1/modules.d/autorandr"
+autorandr --load default

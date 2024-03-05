@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+INPUT="$1"
+OUTPUT="$2"
+cd "$INPUT"
+find . | cpio -H newc -o | gzip -9 > "$OUTPUT"

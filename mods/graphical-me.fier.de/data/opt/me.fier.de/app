@@ -1,0 +1,32 @@
+#!/bin/bash
+de_path="$(dirname "$(realpath "$BASH_SOURCE")")"
+de_distro="${de_distro:="me.fier.de"}"
+de_conf_global="${de_conf_global:="$de_path/user"}"
+de_conf_local="${de_conf_local:="$HOME/.config/$de_distro"}"
+
+if [ "$1" = "source" ]; then
+	return 0
+fi
+
+if ! [ "$1" = "" ]; then
+	echo $1
+	source "$de_path/applets/$1"
+fi
+
+if ! [ -d "$de_conf_local" ]; then
+	cp -r "$de_conf_global" "$de_conf_local"
+fi
+
+while IFS="" read -r de_module || [ -n "$de_module" ]; do
+	if [ -f "$de_conf_local/modules.d/$de_module/source" ]; then
+		source "$de_conf_local/modules.d/$de_module/source"
+	fi
+	
+	if [ -x "$de_conf_local/modules.d/$de_module/run" ]; then
+		"$de_conf_local/modules.d/$de_module/run" "$de_conf_local" "$de_module"
+	fi
+	
+	if [ -x "$de_conf_local/modules.d/$de_module/exec" ]; then
+		exec "$de_conf_local/modules.d/$de_module/exec" "$de_conf_local" "$de_module"
+	fi
+done < "$de_conf_local/modules"

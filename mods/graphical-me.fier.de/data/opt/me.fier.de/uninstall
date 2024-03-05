@@ -1,0 +1,21 @@
+#!/bin/bash
+set -e
+script_path="$(dirname "$(realpath -s "$BASH_SOURCE")")"
+cd "$script_path"
+source app source
+
+if [ "$de_distro" = "" ]; then
+        echo "No distro name."
+        exit 1
+fi
+
+if ! [ -f "$script_path/installed" ]; then
+	echo "Please use the uninstall executable from where you installed this app."
+	exit 1
+fi
+
+if [ -f "/usr/local/bin/$de_distro" ]; then
+	rm "/usr/local/bin/$de_distro"
+fi
+
+rm -rf "$script_path"

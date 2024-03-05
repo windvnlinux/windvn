@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+DIR="$HOME/Pictures/Screenshots"
+FILE="$(date --utc "+%Y.%m.%d-%H.%M.%S").png"
+mkdir -p "$DIR"
+scrot --freeze --select --silent --border "$DIR/$FILE"
+xclip -selection clipboard -t image/png -i "$DIR/$FILE"
+notify-send "wdvn-screenshot" "Saved. Copied image to clipboard." -t 2000 --icon="insert-image"

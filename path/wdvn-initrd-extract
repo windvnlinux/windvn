@@ -1,0 +1,25 @@
+#!/bin/bash
+set -e
+OLDPWD="$PWD"
+INPUT="$1"
+OUTPUT="$2"
+TEMP="$2.tmp"
+TYPE="$(file -b -L "$INPUT")"
+
+mkdir -p "$TEMP/basic"
+
+if [[ "$TYPE" == *"cpio archive"* ]]; then
+	mkdir -p "$TEMP/microcode"
+	cd "$TEMP/microcode"
+	BLOCKS="$(cpio -i <"$INPUT" 2>&1 >/dev/null | tail -1)"
+	BLOCKS="${BLOCKS%% *}"
+	dd if="$INPUT" of="$TEMP/initrd.img" bs=512 skip=$BLOCKS
+	cd "$TEMP/basic"
+	zcat "$TEMP/initrd.img" | cpio -i
+	rm "$TEMP/initrd.img" 
+else
+	cd "$TEMP/basic"
+	zcat "$INPUT" | cpio -i
+fi
+
+mv "$TEMP" "$OUTPUT"

@@ -1,0 +1,7 @@
+# Remove downloaded .deb files after installation by apt-get
+APT::Keep-Downloaded-Packages "false";
+APT::Clean-Installed "true";
+
+# Remove downloaded .deb files after installation by apt
+Binary::apt::APT::Keep-Downloaded-Packages "false";
+Binary::apt::APT::Clean-Installed "true";

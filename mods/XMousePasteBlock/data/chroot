@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+if [[ -f "/usr/local/bin/xmousepasteblock" ]]; then
+	exit
+fi
+apt-get -y install git build-essential libev-dev libx11-dev libxi-dev
+git clone https://github.com/milaq/XMousePasteBlock
+cd XMousePasteBlock
+make
+mv xmousepasteblock /usr/local/bin
+cd ..
+rm -rf XMousePasteBlock

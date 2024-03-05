@@ -1,0 +1,2 @@
+#!/bin/bash
+find "$1/usr/share/locale" -mindepth 1 -maxdepth 1 ! -name "en" ! -name "en_US" ! -name "en_GB" | xargs rm -r

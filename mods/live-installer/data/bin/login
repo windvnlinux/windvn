@@ -1,0 +1,45 @@
+#!/bin/bash
+export PATH="/sbin:/usr/sbin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games"
+export HOME="/root"
+
+CHOICE=1
+
+if ! [ -f "/tmp/wdvn.settings_set" ]; then
+	dpkg-reconfigure keyboard-configuration
+	service console-setup.sh restart
+	udevadm trigger --subsystem-match=input --action=change
+	service keyboard-setup.sh restart
+	echo "1" > "/tmp/wdvn.settings_set"
+	clear
+fi
+
+while true; do
+	echo ""
+	echo "Welcome to windvn!"
+	echo "1: Install"
+	echo "2: Open bash"
+	echo "3: Reboot"
+	echo "4: Shut down"
+	read -p "Choice: " CHOICE
+	echo ""
+	
+	if [ "$CHOICE" == "1" ]; then
+		/opt/wdvn/installer/main
+	fi
+	
+	if [ "$CHOICE" == "2" ]; then
+		bash
+	fi
+	
+	if [ "$CHOICE" == "3" ]; then
+		reboot
+		exit
+	fi
+	
+	if [ "$CHOICE" == "4" ]; then
+		poweroff
+		exit
+	fi
+	
+	echo ""
+done

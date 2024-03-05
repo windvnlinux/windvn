@@ -1,0 +1,4 @@
+#!/bin/bash
+set -e
+apt-get --error-on=any -y update
+apt-get -y upgrade

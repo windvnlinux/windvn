@@ -1,0 +1,463 @@
+#!/usr/bin/python3
+import sys
+import os
+import subprocess
+import getpass
+import time
+import shutil
+import random
+
+def nerr(func,*args,**kwargs):
+	try:
+		return func(*args,**kwargs)
+	except Exception:
+		return
+
+def choiceYn(question,defaultPick = None):
+	qstring = "\n" + question + " y/n"
+	if defaultPick != None: qstring = qstring + " [" +defaultPick+ "]"
+	qstring = qstring + ": "
+	while True:
+		chinput = input(qstring)
+		if chinput == "" and defaultPick != None:
+			chinput = defaultPick
+		chinput = chinput.lower()
+		if chinput == "y": return True
+		if chinput == "n": return False
+
+def choice(question,options,defaultPick = None,direction = 1):
+	qstring = "\n"
+	for option in options:
+		qstring = qstring + "- " + option + "\n"
+	qstring = qstring + question
+	if defaultPick != None: qstring = qstring + " [" +defaultPick+ "]"
+	qstring = qstring + ": "
+	
+	while True:
+		chinput = input(qstring)
+		if chinput == "" and defaultPick != None:
+			chinput = defaultPick
+		if chinput in options: return chinput
+
+def choiceInput(question,defaultPick = None):
+	qstring = "\n" + question
+	if defaultPick != None: qstring = qstring + " [" +defaultPick+ "]"
+	qstring = qstring + ": "
+	
+	while True:
+		chinput = input(qstring)
+		if chinput == "":
+			if defaultPick == None: continue
+			return defaultPick
+		return chinput
+
+def choicePass(question):
+	while True:
+		print("")
+		passw = getpass.getpass(question+ ": ")
+		passwConfirm = getpass.getpass(question+ " (repeat): ")
+		if passw == passwConfirm: return passw
+		print("Passwords don't match, try again.")
+
+def checkProc(proc):
+	rtn = proc.wait()
+	if rtn != 0: raise Exception("Process returned error: " +str(rtn))
+
+def call(*args,**kwargs):
+	proc = subprocess.Popen(*args,**kwargs)
+	checkProc(proc)
+	return
+
+def callString(*args,**kwargs):
+	proc = subprocess.Popen(*args,**kwargs,stdout=subprocess.PIPE)
+	output = proc.stdout.read().decode("utf-8").strip("\n")
+	checkProc(proc)
+	return output
+
+def callList(*args,**kwargs):
+	proc = subprocess.Popen(*args,**kwargs,stdout=subprocess.PIPE)
+	output = proc.stdout.read().decode("utf-8").strip("\n").split("\n")
+	checkProc(proc)
+	return output
+
+def getDisks():
+	return callList(["lsblk","-ndo","PATH"])
+
+def getDiskId(diskPath):
+	for root,dirs,files in os.walk("/dev/disk/by-id"):
+		for file in files:
+			if os.path.realpath("/dev/disk/by-id/" +file) == diskPath:
+				return "/dev/disk/by-id/" +file
+		break
+	return diskPath
+
+def getPartitions():
+	disks = getDisks()
+	partitions = callList(["lsblk","-no","PATH"])
+	index = 0
+	length = len(partitions)
+	while index < length:
+		if partitions[index] in disks:
+			del partitions[index]
+			length -= 1
+			continue
+		index += 1
+	return partitions
+
+def getDiskType(disk):
+	return callString(["blkid","-o","value","-s","PTTYPE",disk])
+
+def getPartitionType(partition):
+	return callString(["blkid","-o","value","-s","TYPE",partition])
+
+def getPartitionUUID(partition):
+	return callString(["blkid","-o","value","-s","UUID",partition])
+
+def getDiskTable(disk):
+	if getDiskType(disk) == "gpt":
+		results = callList(["fdisk","-x",disk,"-o","Device,Type-UUID"])
+	else:
+		results = callList(["fdisk","-x",disk,"-o","Device,Id"])
+	length = len(results)
+	index = length - 1
+	while index >= 0:
+		if results[index] != "" and results[index][0] != "/": break
+		index -= 1
+	if index < 0: return {}
+	results = results[index + 1:]
+	length = len(results)
+	
+	index = 0
+	while index < length:
+		while results[index].replace("  "," ") != results[index]:
+			results[index] = results[index].replace("  "," ")
+		
+		if results[index] == "" or results[index][0] != "/":
+			del results[index]
+			length -= 1
+			continue
+		
+		results[index] = results[index].split(" ")
+		index += 1
+	
+	rtn = {}
+	for part in results:
+		rtn[part[0]] = part[1]
+	
+	return rtn
+
+def getGptReport(disk):
+	rtn = {}
+	rtn["isGPT"] = False
+	rtn["espPart"] = None
+	rtn["espFormatted"] = False
+	rtn["biosPart"] = None
+	
+	if getDiskType(disk) != "gpt": return rtn
+	rtn["isGPT"] = True
+	partitions = callList(["lsblk",disk,"-no","PATH"])
+	del partitions[0]
+	diskTable = getDiskTable(disk)
+	
+	for partition in partitions:
+		if rtn["espPart"] == None:
+			if diskTable[partition] == "C12A7328-F81F-11D2-BA4B-00A0C93EC93B":
+				rtn["espPart"] = partition
+				rtn["espFormatted"] = (getPartitionType(partition) == "vfat")
+		
+		if rtn["biosPart"] == None:
+			if diskTable[partition] == "21686148-6449-6E6F-744E-656564454649":
+				rtn["biosPart"] = partition
+	
+	return rtn
+
+def setKbLayout(kb):
+	call(["loadkeys",kb])
+
+def resetKbLayout():
+	call(["service","console-setup.sh","restart"])
+	call(["udevadm","trigger","--subsystem-match=input","--action=change"])
+	call(["service","keyboard-setup.sh","restart"])
+
+def ipth(path = ""):
+	return "/media/install/" +path
+
+def mkdirp(path):
+	if not os.path.isdir(path): os.makedirs(path)
+
+def chroot(path,cmd,*args,**kwargs):
+	dirs = ["dev","dev/pts","sys","proc"]
+	try:
+		for dir in dirs:
+			call(["mount","-o","bind","/" +dir,path + "/" +dir])
+		call(["chroot",path] + cmd,*args,**kwargs)
+		for dir in reversed(dirs):
+			call(["umount","-l",path + "/" +dir])
+	except Exception as e:
+		for dir in reversed(dirs):
+			try:
+				call(["umount","-l",path + "/" +dir])
+			except:
+				pass
+		raise e
+
+def randomString(length,chars):
+	charsLength = len(chars)
+	output = ""
+	index = 0
+	while index < length:
+		output = output + chars[random.randrange(0,charsLength)]
+		index += 1
+	return output
+
+def randomHex(length):
+	return randomString(length,"0123456789ABCDEF")
+
+def debconfSetSelections(root,options):
+	proc = subprocess.Popen(["chroot",root,"debconf-set-selections"],stdin=subprocess.PIPE)
+	proc.stdin.write((options + "\n").encode("utf-8"))
+	proc.stdin.flush()
+	proc.stdin.close()
+	rtn = proc.wait()
+	if rtn != 0: raise Exception("Process returned error: " +str(rtn))
+
+def main():
+	while choiceYn("Partition disk?"):
+		try:
+			disk = choice("Disk",getDisks())
+			call(["fdisk",disk])
+		except KeyboardInterrupt:
+			pass
+	
+	installPartition = choice("OS Partition",getPartitions())
+	formatPartition = choiceYn("Format partition?","y")
+	if formatPartition:
+		fileSystems = []
+		for path in os.environ["PATH"].split(":"):
+			if not os.path.isdir(path): continue
+			for root,dirs,files in os.walk(path):
+				for file in files:
+					ffile = os.path.join(root,file)
+					lfile = ffile.replace(path + os.path.sep,"",1)
+					if lfile.startswith("mkfs."): fileSystems.append(lfile.replace("mkfs.","",1))
+		
+		fileSystems.sort()
+		defaultChoice = None
+		if "ext4" in fileSystems: defaultChoice = "ext4"
+		formatPartition = choice("File system",fileSystems,defaultChoice)
+	else:
+		formatPartition = None
+	
+	if formatPartition != None:
+		encrypt = choiceYn("Encrypt data?")
+		if encrypt:
+			encryptionPasswords = []
+			setKbLayout("us")
+			try:
+				encryptionPasswords.append(choicePass("Encryption password"))
+			except KeyboardInterrupt:
+				encrypt = False
+			resetKbLayout()
+		
+		if encrypt:
+			while choiceYn("Add another password?"):
+				setKbLayout("us")
+				try:
+					encryptionPasswords.append(choicePass("Encryption password"))
+				except KeyboardInterrupt:
+					resetKbLayout()
+					break
+				resetKbLayout()
+	else:
+		encrypt = False
+	
+	installGRUB = choiceYn("Install GRUB?","y")
+	if installGRUB:
+		try:
+			grubDisk = choice("GRUB disk",getDisks())
+		except KeyboardInterrupt:
+			installGRUB = False
+	
+	if installGRUB:
+		gptInfo = getGptReport(grubDisk)
+		if gptInfo["isGPT"] == True:
+			if gptInfo["espPart"] == None:
+				if gptInfo["biosPart"] == None:
+					if choiceYn("WARNING: No ESP nor BIOS partition found on GPT disk " +grubDisk+ ", GRUB will not be installed. Continue?","n") == False:
+						sys.exit(1)
+					else:
+						installGRUB = False
+				else:
+					if choiceYn("WARNING: No ESP partition found. The disk might only boot on BIOS (legacy). Continue?","n") == False:
+						sys.exit(1)
+			else:
+				formatEsp = False
+				if gptInfo["espFormatted"] == False:
+					formatEsp = choiceYn("The disk's ESP partition (" +gptInfo["espPart"]+ ") does not seem to be formatted correctly. Format it?")
+				
+				defaultChoice = "i386"
+				if callString(["uname","-m"]) == "x86_64": defaultChoice = "x86_64"
+				grubVersion = choice("Which version of EFI GRUB should be installed? Note that 'both' is not always compatible.",["i386","x86_64","both"],defaultChoice)
+	
+	print("")
+	print("The rest of this setup will continue without your input ...")
+	time.sleep(5)
+	print("")
+	
+	if formatPartition != None:
+		print("> Wiping partition signature ...")
+		call(["wipefs","-a",installPartition])
+	
+	if encrypt:
+		print("> Encrypting partition ...")
+		call(["apt-get","-y","install","cryptsetup"],stdout=subprocess.DEVNULL)
+		cryptPartition = installPartition
+		
+		mainPass = encryptionPasswords.pop(0)
+		proc = subprocess.Popen(["cryptsetup","luksFormat","--type","luks1",cryptPartition],stdin=subprocess.PIPE)
+		proc.stdin.write((mainPass + "\n").encode("utf-8"))
+		proc.stdin.flush()
+		checkProc(proc)
+		
+		for passw in encryptionPasswords:
+			print("Adding another password ...")			
+			proc = subprocess.Popen(["cryptsetup","luksAddKey",cryptPartition],stdin=subprocess.PIPE)
+			proc.stdin.write((mainPass + "\n" + passw + "\n").encode("utf-8"))
+			proc.stdin.flush()
+			checkProc(proc)
+		
+		print("Creating block device ...")
+		proc = subprocess.Popen(["cryptsetup","luksOpen",cryptPartition,"system"],stdin=subprocess.PIPE)
+		proc.stdin.write((mainPass + "\n").encode("utf-8"))
+		proc.stdin.flush()
+		checkProc(proc)
+		installPartition = "/dev/mapper/system"
+	
+	if formatPartition != None:
+		print("> Formatting partition ...")
+		call(["mkfs." +formatPartition,installPartition])
+	
+	print("> Grabbing partition UUIDs ...")
+	installPartitionUUID = getPartitionUUID(installPartition)
+	if encrypt: cryptPartitionUUID = getPartitionUUID(cryptPartition)
+	
+	print("> Mounting main partition ...")
+	mkdirp(ipth())
+	call(["mount",installPartition,ipth()])
+	
+	print("> Adding files")
+	print("Creating swap ...")
+	hasSwap = False
+	try:
+		if formatPartition == "btrfs":
+			call(["truncate","-s","0",ipth("swap")])
+			call(["chattr","+C",ipth("swap")])
+			call(["fallocate","-l","512M",ipth("swap")])
+		else:
+			call(["dd","if=/dev/zero","of=" +ipth("swap"),"bs=1M","count=512","status=progress"])
+		
+		call(["chmod","0600",ipth("swap")])
+		call(["mkswap",ipth("swap")])
+		call(["swapon",ipth("swap")])
+		hasSwap = True
+	except Exception as e:
+		print(e)
+		print("WARNING: Creating swap failed, skipping.")
+		try:
+			os.remove(ipth("swap"))
+		except Exception:
+			pass
+	
+	print("Unpacking OS ...")
+	call(["unsquashfs","-f","-d",ipth(),"/lib/live/mount/medium/live/filesystem.squashfs"])
+	
+	print("Setting hostname ...")
+	hostname = randomHex(8)
+	fh = open(ipth("etc/hostname"),"w")
+	fh.write(hostname + "\n")
+	fh.close()
+	
+	if encrypt:
+		print("Writing crypto grub config ...")
+		fh = open(ipth("etc/default/grub.d/cryptodisk.cfg"),"w")
+		fh.write("GRUB_ENABLE_CRYPTODISK=y\n")
+		fh.write('GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX cryptdevice=UUID=' +cryptPartitionUUID+ ' root=UUID=' +installPartitionUUID+ '"\n')
+		fh.close()
+		
+		print("Writing crypttab ...")
+		fh = open(ipth("etc/crypttab"),"w")
+		fh.write('system UUID=' +cryptPartitionUUID+ ' none luks\n')
+		fh.close()
+	
+	print("Writing fstab ...")
+	fh = open(ipth("etc/fstab"),"w")
+	fh.write('UUID=' +installPartitionUUID+ ' / ' +getPartitionType(installPartition)+ ' defaults 0 1\n')
+	if hasSwap: fh.write('/swap none swap sw 0 0\n')
+	fh.close()
+	
+	print("Copying keyboard settings ...")
+	shutil.copyfile("/etc/default/keyboard",ipth("etc/default/keyboard"))
+	
+	print("> Removing live-specific packages ...")
+	chroot(ipth(),["apt-get","-y","--purge","remove","live-boot","live-boot-initramfs-tools"])
+	chroot(ipth(),["apt-get","-y","--purge","autoremove"])
+	os.remove(ipth("bin/login"))
+	os.rename(ipth("bin/login.oobe"),ipth("bin/login"))
+	
+	if encrypt:
+		print("> Installing encryption-specific packages ...")
+		chroot(ipth(),["apt-get","-y","install","cryptsetup-initramfs"])
+	else:
+		print("> Updating initramfs ...")
+		chroot(ipth(),["update-initramfs","-u"])
+	
+	if installGRUB:
+		print("> Installing GRUB")
+		debconfSetSelections(ipth(),"grub-pc	grub-pc/install_devices	multiselect	" +getDiskId(grubDisk))
+		debconfSetSelections(ipth(),"grub-pc	grub2/enable_os_prober	boolean	true")
+		os.environ["DEBIAN_FRONTEND"] = "noninteractive"
+		chroot(ipth(),["dpkg-reconfigure","grub-pc"])
+		del os.environ["DEBIAN_FRONTEND"]
+		
+		if gptInfo["isGPT"]:
+			if gptInfo["espPart"] != None:
+				if formatEsp:
+					print("Formatting ESP ...")
+					call(["wipefs","-a",gptInfo["espPart"]])
+					call(["mkfs.vfat","-F","32",gptInfo["espPart"]])
+				
+				print("Mounting ESP ...")
+				mkdirp(ipth("boot/efi"))
+				call(["mount",gptInfo["espPart"],ipth("boot/efi")])
+				
+				print("Installing GRUB (EFI) ...")
+				grubTargets = []
+				if grubVersion in ["i386","both"]: grubTargets.append("i386-efi")
+				if grubVersion in ["x86_64","both"]: grubTargets.append("x86_64-efi")
+				for target in grubTargets:
+					chroot(ipth(),["grub-install","--target=" +target,"--bootloader-id=GRUB","--efi-directory=/boot/efi","--boot-directory=/boot","--force-extra-removable",grubDisk])
+				
+				print("Unmounting ESP ...")
+				call(["umount","-l",ipth("boot/efi")])
+				os.rmdir(ipth("boot/efi"))
+			
+			if gptInfo["biosPart"] != None:
+				print("Installing GRUB (BIOS) ...")
+				chroot(ipth(),["grub-install","--target=i386-pc","--boot-directory=/boot",grubDisk])
+		else:
+			print("Installing GRUB (BIOS) ...")
+			chroot(ipth(),["grub-install","--target=i386-pc","--boot-directory=/boot",grubDisk])
+		
+		print("Configuring GRUB ...")
+		chroot(ipth(),["update-grub"])
+	
+	print("> Unmounting ...")
+	if hasSwap: call(["swapoff",ipth("swap")])
+	call(["umount","-l",ipth()])
+	os.rmdir(ipth())
+	if encrypt: call(["cryptsetup","luksClose","system"])
+	
+	print("Success. Press ENTER to quit setup.")
+	input()
+	
+main()

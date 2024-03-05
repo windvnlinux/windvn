@@ -1,0 +1,3 @@
+#!/bin/bash
+export WDVN_PACKAGES_DL="$WDVN_PACKAGES_DL xinit unifont connman-gtk feh autorandr openbox mlterm lxpanel lxrandr pcmanfm"
+export WDVN_PACKAGES_REMOVE="$WDVN_PACKAGES_REMOVE xscreensaver"

@@ -1,0 +1,12 @@
+#!/bin/bash
+echo "deb $WDVN_URL $WDVN_VER main
+# deb-src $WDVN_URL $WDVN_VER main
+
+deb $WDVN_URL $WDVN_VER-security main
+# deb-src $WDVN_URL $WDVN_VER-security main
+
+# $WDVN_VER-updates, to get updates before a point release is made;
+# see https://www.debian.org/doc/manuals/debian-reference/ch02.en.html#_updates>
+# deb $WDVN_URL $WDVN_VER-updates main
+# deb-src $WDVN_URL $WDVN_VER-updates main
+" >"$1/etc/apt/sources.list"

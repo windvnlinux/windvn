@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+>&2 echo "Compressing modules ..."
+for i in $(find /lib/modules -name "*.ko"); do
+    if [ "$(file "$i"|grep ELF)" != "" ]; then
+        >&2 echo "> $i ..."
+        xz -9 "$i"
+        mv "$i.xz" "$i"
+    fi
+done
+/usr/sbin/update-initramfs $*
+exit $?

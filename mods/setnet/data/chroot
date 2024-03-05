@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+command -v wget >/dev/null
+WGET_INSTALL="$?"
+set -e
+
+if [ "$WGET_INSTALL" = "1" ]; then
+	apt-get -y install wget
+fi
+
+wget "https://pkgmaster.devuan.org/devuan/pool/main/s/setnet/setnet_0.4.0-1_all.deb"
+apt-get -y install "./setnet_0.4.0-1_all.deb"
+rm "./setnet_0.4.0-1_all.deb"
+
+if [ "$WGET_INSTALL" = "1" ]; then
+	apt-get -y remove --purge --auto-remove wget
+fi

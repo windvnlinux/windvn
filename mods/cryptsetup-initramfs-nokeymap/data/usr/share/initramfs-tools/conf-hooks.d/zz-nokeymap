@@ -1,0 +1,3 @@
+# Disable the use of non-us keyboards to make GRUB consistent with initramfs.
+# This is useful for entering crypto passphrases.
+KEYMAP=n

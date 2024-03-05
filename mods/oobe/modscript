@@ -1,0 +1,6 @@
+#!/bin/bash
+if [ ! -f "$1/bin/login.bak" ]; then
+	cp "$1/bin/login" "$1/bin/login.bak"
+fi
+export WDVN_PACKAGES="$WDVN_PACKAGES perl"
+export WDVN_PACKAGES_DL="$WDVN_PACKAGES_DL locales tzdata"

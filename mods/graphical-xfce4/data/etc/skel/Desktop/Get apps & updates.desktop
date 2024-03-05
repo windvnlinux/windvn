@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Get apps & updates
+Comment=
+Exec=synaptic-pkexec
+Icon=synaptic
+Path=
+Terminal=false
+StartupNotify=false

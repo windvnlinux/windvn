@@ -1,0 +1,3 @@
+#!/bin/bash
+export WDVN_ARCH="i386"
+export WDVN_KERNEL="linux-image-686"

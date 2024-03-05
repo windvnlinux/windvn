@@ -1,0 +1,4 @@
+#!/bin/bash
+export WDVN_PACKAGES="$WDVN_PACKAGES dosfstools btrfs-progs squashfs-tools console-data python3"
+export WDVN_REMOVE="$WDVN_REMOVE squashfs-tools"
+cp "$1/bin/login" "$1/bin/login.oobe"

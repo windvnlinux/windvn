@@ -1,0 +1,3 @@
+#!/bin/bash
+set -e
+GZIP=-9 tar -czvf "$2" -C "$1" . 
