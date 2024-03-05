@@ -18,6 +18,8 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
+      - name: update apt
+        run: sudo apt update
       # Runs a single command using the runners shell
-      - name: install build dependencies
+      - name: install build dependencies 
         run: sudo apt install git debootstrap grub-common grub-pc-bin grub-efi-ia32-bin grub-efi-amd64-bin mtools squashfs-tools xorriso xxd
